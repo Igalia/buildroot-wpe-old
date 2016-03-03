@@ -18,7 +18,6 @@ OPENWEBRTC_CONF_OPTS += \
 	--enable-owr-gst \
 	--disable-bridge \
 	--disable-introspection \
-	--disable-tests \
 	--disable-gtk-doc
 
 $(eval $(autotools-package))
