@@ -181,6 +181,13 @@ config BR2_PACKAGE_WPE_SELFCOMPRESS
 	help
 	  Use UPX to Self-compress WPE libraries in order to save space
 
+config BR2_PACKAGE_WPE_ENABLE_WEB_RTC
+	bool "Enable WebRTC"
+	default n
+	select BR2_PACKAGE_WPE_ENABLE_MEDIA_STREAM
+	help
+	  Enable WebRTC compilation on WPE
+
 endmenu
 
 endif
