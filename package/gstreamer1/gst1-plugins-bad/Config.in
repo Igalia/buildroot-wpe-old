@@ -583,6 +583,13 @@ config BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_NEON
 	help
 	  lib neon http client src
 
+config BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_SRTP
+	bool "srtp"
+	select BR2_PACKAGE_LIBSRTP
+	default n
+	help
+	  lib Secure RTP (SRTP) and UST Reference Implementations
+
 config BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_OPENAL
 	bool "openal"
 	depends on BR2_INSTALL_LIBSTDCPP
