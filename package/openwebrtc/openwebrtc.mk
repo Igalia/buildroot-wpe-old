@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-OPENWEBRTC_VERSION = 91e8aa40121cbd1bc65d093141c7201cc1813fb8
+OPENWEBRTC_VERSION = 5e2b0a14d581b54c5abe7b386256b6681ef3f4a7
 OPENWEBRTC_SITE = $(call github,EricssonResearch,openwebrtc,$(OPENWEBRTC_VERSION))
 OPENWEBRTC_LICENSE = BSD-2 Clause
 OPENWEBRTC_LICENSE_FILES = LICENSE
