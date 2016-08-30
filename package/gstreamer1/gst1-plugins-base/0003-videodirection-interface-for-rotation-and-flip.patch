@@ -1,0 +1,316 @@
+From 0c7de99f19ad4a73197d671c868f4c543ae44b76 Mon Sep 17 00:00:00 2001
+From: Xabier Rodriguez Calvar <calvaris@igalia.com>
+Date: Tue, 26 Jul 2016 19:14:40 +0200
+Subject: [PATCH 3/3] videodirection: interface for rotation and flip
+
+A GstVideoOrientationMethod enumeration is also provided for the
+admitted property values.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=768687
+---
+ docs/libs/gst-plugins-base-libs-docs.sgml    |  1 +
+ docs/libs/gst-plugins-base-libs-sections.txt | 15 +++++++
+ docs/libs/gst-plugins-base-libs.types        |  2 +
+ gst-libs/gst/video/Makefile.am               |  2 +
+ gst-libs/gst/video/video.h                   | 31 ++++++++++++++
+ gst-libs/gst/video/videodirection.c          | 52 +++++++++++++++++++++++
+ gst-libs/gst/video/videodirection.h          | 62 ++++++++++++++++++++++++++++
+ gst-plugins-base.spec.in                     |  1 +
+ tests/check/libs/gstlibscpp.cc               |  1 +
+ tests/check/libs/libsabi.c                   |  1 +
+ 11 files changed, 169 insertions(+), 1 deletion(-)
+ create mode 100644 gst-libs/gst/video/videodirection.c
+ create mode 100644 gst-libs/gst/video/videodirection.h
+
+diff --git a/docs/libs/gst-plugins-base-libs-docs.sgml b/docs/libs/gst-plugins-base-libs-docs.sgml
+index 57e2407..7e7a58c 100644
+--- a/docs/libs/gst-plugins-base-libs-docs.sgml
++++ b/docs/libs/gst-plugins-base-libs-docs.sgml
+@@ -209,6 +209,7 @@
+       <xi:include href="xml/gstvideosink.xml" />
+       <xi:include href="xml/gstcolorbalance.xml" />
+       <xi:include href="xml/gstcolorbalancechannel.xml" />
++      <xi:include href="xml/gstvideodirection.xml" />
+       <xi:include href="xml/gstvideoorientation.xml" />
+       <xi:include href="xml/gstvideooverlay.xml" />
+       <xi:include href="xml/gstvideodecoder.xml" />
+diff --git a/docs/libs/gst-plugins-base-libs-sections.txt b/docs/libs/gst-plugins-base-libs-sections.txt
+index d00e67c..35022cc 100644
+--- a/docs/libs/gst-plugins-base-libs-sections.txt
++++ b/docs/libs/gst-plugins-base-libs-sections.txt
+@@ -876,6 +876,19 @@ gst_stream_volume_get_type
+ </SECTION>
+ 
+ <SECTION>
++<FILE>gstvideodirection</FILE>
++<INCLUDE>gst/video/videodirection.h</INCLUDE>
++GstVideoDirection
++GstVideoDirectionInterface
++<SUBSECTION Standard>
++GST_TYPE_VIDEO_DIRECTION
++GST_VIDEO_DIRECTION
++GST_IS_VIDEO_DIRECTION
++GST_VIDEO_DIRECTION_GET_INTERFACE
++gst_video_direction_get_type
++</SECTION>
++
++<SECTION>
+ <FILE>gstvideoorientation</FILE>
+ <INCLUDE>gst/video/videoorientation.h</INCLUDE>
+ GstVideoOrientation
+@@ -2358,6 +2371,8 @@ GST_META_TAG_VIDEO_ORIENTATION_STR
+ GST_META_TAG_VIDEO_SIZE_STR
+ GST_META_TAG_VIDEO_COLORSPACE_STR
+ 
++GstVideoOrientationMethod
++
+ #video-event.h
+ <SUBSECTION>
+ gst_video_event_new_still_frame
+diff --git a/docs/libs/gst-plugins-base-libs.types b/docs/libs/gst-plugins-base-libs.types
+index 6ce1f36..031229f 100644
+--- a/docs/libs/gst-plugins-base-libs.types
++++ b/docs/libs/gst-plugins-base-libs.types
+@@ -43,6 +43,8 @@ gst_video_sink_get_type
+ #include <gst/video/colorbalance.h>
+ gst_color_balance_get_type
+ gst_color_balance_channel_get_type
++#include <gst/video/videodirection.h>
++gst_video_direction_get_type
+ #include <gst/video/videoorientation.h>
+ gst_video_orientation_get_type
+ #include <gst/video/videooverlay.h>
+diff --git a/gst-libs/gst/video/Makefile.am b/gst-libs/gst/video/Makefile.am
+index 91b72ff..379b548 100644
+--- a/gst-libs/gst/video/Makefile.am
++++ b/gst-libs/gst/video/Makefile.am
+@@ -38,6 +38,7 @@ libgstvideo_@GST_API_VERSION@_la_SOURCES = \
+ 	gstvideoaffinetransformationmeta.c \
+ 	gstvideometa.c   	\
+ 	gstvideopool.c		\
++	videodirection.c	\
+ 	videoorientation.c	\
+ 	videooverlay.c          \
+ 	gstvideodecoder.c       \
+@@ -72,6 +73,7 @@ libgstvideo_@GST_API_VERSION@include_HEADERS = \
+ 	gstvideometa.h		\
+ 	gstvideoaffinetransformationmeta.h \
+ 	gstvideopool.h		\
++	videodirection.h 	\
+ 	videoorientation.h 	\
+ 	videooverlay.h          \
+ 	gstvideodecoder.h       \
+diff --git a/gst-libs/gst/video/video.h b/gst-libs/gst/video/video.h
+index 5399182..536f802 100644
+--- a/gst-libs/gst/video/video.h
++++ b/gst-libs/gst/video/video.h
+@@ -57,6 +57,36 @@ struct _GstVideoAlignment
+   guint stride_align[GST_VIDEO_MAX_PLANES];
+ };
+ 
++/**
++ * GstVideoOrientationMethod:
++ * @GST_VIDEO_ORIENTATION_IDENTITY: Identity (no rotation)
++ * @GST_VIDEO_ORIENTATION_90R: Rotate clockwise 90 degrees
++ * @GST_VIDEO_ORIENTATION_180: Rotate 180 degrees
++ * @GST_VIDEO_ORIENTATION_90L: Rotate counter-clockwise 90 degrees
++ * @GST_VIDEO_ORIENTATION_HORIZ: Flip horizontally
++ * @GST_VIDEO_ORIENTATION_VERT: Flip vertically
++ * @GST_VIDEO_ORIENTATION_UL_LR: Flip across upper left/lower right diagonal
++ * @GST_VIDEO_ORIENTATION_UR_LL: Flip across upper right/lower left diagonal
++ * @GST_VIDEO_ORIENTATION_AUTO: Select flip method based on image-orientation tag
++ * @GST_VIDEO_ORIENTATION_CUSTOM: Current status depends on plugin internal setup
++ *
++ * The different video orientation methods.
++ *
++ * Since: 1.10
++ */
++typedef enum {
++  GST_VIDEO_ORIENTATION_IDENTITY,
++  GST_VIDEO_ORIENTATION_90R,
++  GST_VIDEO_ORIENTATION_180,
++  GST_VIDEO_ORIENTATION_90L,
++  GST_VIDEO_ORIENTATION_HORIZ,
++  GST_VIDEO_ORIENTATION_VERT,
++  GST_VIDEO_ORIENTATION_UL_LR,
++  GST_VIDEO_ORIENTATION_UR_LL,
++  GST_VIDEO_ORIENTATION_AUTO,
++  GST_VIDEO_ORIENTATION_CUSTOM,
++} GstVideoOrientationMethod;
++
+ /* metadata macros */
+ /**
+  * GST_META_TAG_VIDEO_STR:
+@@ -137,6 +167,7 @@ G_END_DECLS
+ #include <gst/video/navigation.h>
+ #include <gst/video/video-blend.h>
+ #include <gst/video/video-event.h>
++#include <gst/video/videodirection.h>
+ #include <gst/video/videoorientation.h>
+ #include <gst/video/video-overlay-composition.h>
+ #include <gst/video/videooverlay.h>
+diff --git a/gst-libs/gst/video/videodirection.c b/gst-libs/gst/video/videodirection.c
+new file mode 100644
+index 0000000..da908a9
+--- /dev/null
++++ b/gst-libs/gst/video/videodirection.c
+@@ -0,0 +1,52 @@
++/* GStreamer
++ * Copyright (C) 2016 Igalia <calvaris@igalia.com>
++ *
++ * videodirection.c: video rotation and flipping interface
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++#include "video.h"
++
++#define PROP_DIRECTION_DEFAULT GST_VIDEO_ORIENTATION_IDENTITY
++
++/**
++ * SECTION:gstvideodirection
++ * @short_description: Interface for elements providing video
++ * rotation and flipping controls
++ *
++ * The interface allows unified access to control flipping and rotation
++ * operations of video-sources or operators.
++ *
++ * Since: 1.10
++ */
++
++G_DEFINE_INTERFACE (GstVideoDirection, gst_video_direction, 0);
++
++static void
++gst_video_direction_default_init (GstVideoDirectionInterface * iface)
++{
++  g_object_interface_install_property (iface,
++      g_param_spec_enum ("video-direction", "Video direction",
++          "Video direction: rotation and flipping",
++          GST_TYPE_VIDEO_ORIENTATION_METHOD, PROP_DIRECTION_DEFAULT,
++          GST_PARAM_CONTROLLABLE | G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
++          G_PARAM_STATIC_STRINGS));
++}
+diff --git a/gst-libs/gst/video/videodirection.h b/gst-libs/gst/video/videodirection.h
+new file mode 100644
+index 0000000..1428489
+--- /dev/null
++++ b/gst-libs/gst/video/videodirection.h
+@@ -0,0 +1,62 @@
++/* GStreamer
++ * Copyright (C) 2016 Igalia <calvaris@igalia.com>
++ *
++ * videodirection.h: video rotation and flipping interface
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __GST_VIDEO_DIRECTION_H__
++#define __GST_VIDEO_DIRECTION_H__
++
++#include <gst/gst.h>
++
++G_BEGIN_DECLS
++#define GST_TYPE_VIDEO_DIRECTION \
++  (gst_video_direction_get_type ())
++#define GST_VIDEO_DIRECTION(obj) \
++  (G_TYPE_CHECK_INSTANCE_CAST ((obj), GST_TYPE_VIDEO_DIRECTION, GstVideoDirection))
++#define GST_IS_VIDEO_DIRECTION(obj) \
++  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GST_TYPE_VIDEO_DIRECTION))
++#define GST_VIDEO_DIRECTION_GET_INTERFACE(inst) \
++  (G_TYPE_INSTANCE_GET_INTERFACE ((inst), GST_TYPE_VIDEO_DIRECTION, GstVideoDirectionInterface))
++/**
++ * GstVideoDirection:
++ *
++ * Opaque #GstVideoDirection data structure.
++ *
++ * Since: 1.10
++ */
++typedef struct _GstVideoDirection GstVideoDirection;
++typedef struct _GstVideoDirectionInterface GstVideoDirectionInterface;
++
++/**
++ * GstVideoDirectionInterface:
++ * @iface: parent interface type.
++ *
++ * #GstVideoDirectionInterface interface.
++ *
++ * Since: 1.10
++ */
++struct _GstVideoDirectionInterface
++{
++  GTypeInterface iface;
++};
++
++GType gst_video_direction_get_type (void);
++
++G_END_DECLS
++#endif /* __GST_VIDEO_DIRECTION_H__ */
+diff --git a/gst-plugins-base.spec.in b/gst-plugins-base.spec.in
+index c9613f0..47e46e7 100644
+--- a/gst-plugins-base.spec.in
++++ b/gst-plugins-base.spec.in
+@@ -221,6 +221,7 @@ GStreamer Plugins Base library development and header files.
+ %{_includedir}/gstreamer-%{majorminor}/gst/audio/streamvolume.h
+ %{_includedir}/gstreamer-%{majorminor}/gst/video/colorbalance.h
+ %{_includedir}/gstreamer-%{majorminor}/gst/video/colorbalancechannel.h
++%{_includedir}/gstreamer-%{majorminor}/gst/video/videodirection.h
+ %{_includedir}/gstreamer-%{majorminor}/gst/video/videoorientation.h
+ %{_includedir}/gstreamer-%{majorminor}/gst/video/videooverlay.h
+ %{_includedir}/gstreamer-%{majorminor}/gst/app/app.h
+diff --git a/tests/check/libs/gstlibscpp.cc b/tests/check/libs/gstlibscpp.cc
+index eaf7dbb..db1faca 100644
+--- a/tests/check/libs/gstlibscpp.cc
++++ b/tests/check/libs/gstlibscpp.cc
+@@ -89,6 +89,7 @@
+ #include <gst/video/video.h>
+ #include <gst/video/colorbalancechannel.h>
+ #include <gst/video/colorbalance.h>
++#include <gst/video/videodirection.h>
+ #include <gst/video/videoorientation.h>
+ #include <gst/video/videooverlay.h>
+ #include <gst/video/navigation.h>
+diff --git a/tests/check/libs/libsabi.c b/tests/check/libs/libsabi.c
+index 508406a..316826e 100644
+--- a/tests/check/libs/libsabi.c
++++ b/tests/check/libs/libsabi.c
+@@ -62,6 +62,7 @@
+ #include <gst/video/gstvideofilter.h>
+ #include <gst/video/gstvideosink.h>
+ #include <gst/video/colorbalance.h>
++#include <gst/video/videodirection.h>
+ #include <gst/video/videoorientation.h>
+ #include <gst/video/videooverlay.h>
+ #include <gst/video/navigation.h>
+-- 
+2.9.3
+

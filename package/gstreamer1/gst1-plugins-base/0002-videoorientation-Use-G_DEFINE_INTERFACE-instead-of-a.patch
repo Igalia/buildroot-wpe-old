@@ -1,0 +1,58 @@
+From 6fa1d59bb37de0c378dafa08b3a2e6a27856fe9e Mon Sep 17 00:00:00 2001
+From: Xabier Rodriguez Calvar <calvaris@igalia.com>
+Date: Mon, 11 Jul 2016 19:17:41 +0200
+Subject: [PATCH 2/3] videoorientation: Use G_DEFINE_INTERFACE instead of a
+ manually written get_type()
+
+https://bugzilla.gnome.org/show_bug.cgi?id=768687
+---
+ gst-libs/gst/video/videoorientation.c | 31 +++----------------------------
+ 1 file changed, 3 insertions(+), 28 deletions(-)
+
+diff --git a/gst-libs/gst/video/videoorientation.c b/gst-libs/gst/video/videoorientation.c
+index 2ed53f5..9e2149b 100644
+--- a/gst-libs/gst/video/videoorientation.c
++++ b/gst-libs/gst/video/videoorientation.c
+@@ -39,36 +39,11 @@
+ /* FIXME 0.11: check if we need to add API for sometimes-supportedness
+  * (aka making up for GstImplementsInterface removal) (probably yes) */
+ 
+-static void gst_video_orientation_iface_init (GstVideoOrientationInterface *
+-    iface);
+-
+-GType
+-gst_video_orientation_get_type (void)
+-{
+-  static GType gst_video_orientation_type = 0;
+-
+-  if (!gst_video_orientation_type) {
+-    static const GTypeInfo gst_video_orientation_info = {
+-      sizeof (GstVideoOrientationInterface),
+-      (GBaseInitFunc) gst_video_orientation_iface_init,
+-      NULL,
+-      NULL,
+-      NULL,
+-      NULL,
+-      0,
+-      0,
+-      NULL,
+-    };
+-
+-    gst_video_orientation_type = g_type_register_static (G_TYPE_INTERFACE,
+-        "GstVideoOrientation", &gst_video_orientation_info, 0);
+-  }
+-
+-  return gst_video_orientation_type;
+-}
++G_DEFINE_INTERFACE (GstVideoOrientation, gst_video_orientation, 0)
+ 
+ static void
+-gst_video_orientation_iface_init (GstVideoOrientationInterface * iface)
++gst_video_orientation_default_init (GstVideoOrientationInterface *
++    iface)
+ {
+   /* default virtual functions */
+ 
+-- 
+2.9.3
+
