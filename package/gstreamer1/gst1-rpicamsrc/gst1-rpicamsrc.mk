@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-GST1_RPICAMSRC_VERSION = f5ba100fae43d964a95f22123c610e58a12e5c3d
-GST1_RPICAMSRC_SITE = $(call github,thaytan,gst-rpicamsrc,$(GST1_RPICAMSRC_VERSION))
+GST1_RPICAMSRC_VERSION = 60a3364f2544f43f20450f9943ed376386b6c82d
+GST1_RPICAMSRC_SITE = $(call github,Metrological,gst-rpicamsrc,$(GST1_RPICAMSRC_VERSION))
 
 GST1_RPICAMSRC_LICENSE = LGPLv2.1
 GST1_RPICAMSRC_LICENSE_FILES = COPYING
