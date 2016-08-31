@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-GST1_RPICAMSRC_VERSION = 60a3364f2544f43f20450f9943ed376386b6c82d
+GST1_RPICAMSRC_VERSION = 38fbc6eed45438b33575a5552e7f38d3a7b0bc6b
 GST1_RPICAMSRC_SITE = $(call github,Metrological,gst-rpicamsrc,$(GST1_RPICAMSRC_VERSION))
 
 GST1_RPICAMSRC_LICENSE = LGPLv2.1
