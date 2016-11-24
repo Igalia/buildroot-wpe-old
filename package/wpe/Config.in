@@ -61,12 +61,6 @@ config BR2_PACKAGE_WPE_ENABLE_LOGGING
 
 if !BR2_PACKAGE_WPE_ONLY_JSC
 
-config BR2_PACKAGE_WPE_ENABLE_MEDIA_STREAM
-	depends on BR2_PACKAGE_OPENWEBRTC
-	bool "Media Stream"
-	help
-	  Enable Media Stream
-
 config BR2_PACKAGE_WPE_USE_WEB_AUDIO
 	bool "Web Audio"
 	default y
@@ -184,7 +178,6 @@ config BR2_PACKAGE_WPE_SELFCOMPRESS
 config BR2_PACKAGE_WPE_ENABLE_WEB_RTC
 	bool "Enable WebRTC"
 	default n
-	select BR2_PACKAGE_WPE_ENABLE_MEDIA_STREAM
 	help
 	  Enable WebRTC compilation on WPE
 
