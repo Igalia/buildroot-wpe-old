@@ -94,10 +94,6 @@ GST1_PLUGINS_BAD_CONF_ENV += \
 	-I$(STAGING_DIR)/usr/include/interface/vmcs_host/linux"
 endif
 
-ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_LIB_OPENGL),y)
-GST1_PLUGINS_BAD_DEPENDENCIES += graphene
-endif
-
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_LIB_OPENGL_OPENGL),y)
 GST1_PLUGINS_BAD_CONF_OPTS += --enable-opengl
 GST1_PLUGINS_BAD_DEPENDENCIES += libgl libglu
@@ -153,6 +149,10 @@ endif
 ifeq ($(BR2_PACKAGE_ORC),y)
 GST1_PLUGINS_BAD_DEPENDENCIES += orc
 GST1_PLUGINS_BAD_CONF_OPTS += --enable-orc
+endif
+
+ifeq ($(BR2_PACKAGE_GRAPHENE),y)
+GST1_PLUGINS_BAD_DEPENDENCIES += graphene
 endif
 
 ifeq ($(BR2_PACKAGE_BLUEZ_UTILS),y)
