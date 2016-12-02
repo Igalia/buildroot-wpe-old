@@ -1,0 +1,27 @@
+From 990c123eb75867cc2f69d905494f4001e070742a Mon Sep 17 00:00:00 2001
+From: Philippe Normand <philn@igalia.com>
+Date: Thu, 1 Dec 2016 15:17:05 +0100
+Subject: [PATCH] Revert "rpicamsrc: MMAL gives buffers with nal alignment, not
+ AU"
+
+This reverts commit 43a38970f0d2e98c20b36339c282e51341627b57.
+---
+ src/gstrpicamsrc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/gstrpicamsrc.c b/src/gstrpicamsrc.c
+index 8712c21..788daae 100644
+--- a/src/gstrpicamsrc.c
++++ b/src/gstrpicamsrc.c
+@@ -187,7 +187,7 @@ enum
+   "height = " GST_VIDEO_SIZE_RANGE ", "         \
+   "framerate = " GST_VIDEO_FPS_RANGE ", "       \
+   "stream-format = (string) byte-stream, "  \
+-  "alignment = (string) nal, "               \
++  "alignment = (string) au, "               \
+   "profile = (string) { baseline, main, high }"
+ #define RAW_CAPS \
+   GST_VIDEO_CAPS_MAKE ("{ I420, RGB, BGR, RGBA }") /* FIXME: Map more raw formats */
+-- 
+2.10.2
+
