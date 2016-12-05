@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-OPENWEBRTC_VERSION = 35beb4e2fa9436564edfed31e6cf149bbe9c265d
+OPENWEBRTC_VERSION = 164b79ea00c522c6eb431b65f1e658ec6e87327b
 OPENWEBRTC_SITE = $(call github,Metrological,openwebrtc,$(OPENWEBRTC_VERSION))
 OPENWEBRTC_LICENSE = BSD-2 Clause
 OPENWEBRTC_LICENSE_FILES = LICENSE
