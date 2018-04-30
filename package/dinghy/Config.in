@@ -1,5 +1,0 @@
-config BR2_PACKAGE_DINGHY
-	bool "dinghy"
-	depends on BR2_PACKAGE_WPEWEBKIT
-	help
-	  Bare-bones WPE full screen browser.
