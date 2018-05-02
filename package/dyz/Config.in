@@ -1,0 +1,8 @@
+config BR2_PACKAGE_DYZ
+	bool "dyz"
+	select BR2_PACKAGE_LUAJIT_BETA
+	select BR2_PACKAGE_WESTON
+	select BR2_PACKAGE_WPEBACKEND_FDO
+	select BR2_PACKAGE_WPEWEBKIT
+	help
+	  A simple launcher for WPE WebKit
